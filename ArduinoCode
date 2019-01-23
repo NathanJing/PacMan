@@ -1,0 +1,243 @@
+const int pinSER = 11;
+const int pinCLK = 12;
+const int pinLCH = 13;
+const int pinX = A1;
+const int pinY = A0;
+const int joyStick = 2;
+const int LED = 3;
+const int buzzer = 6;
+
+int myRow = 1, myCol = 1;
+int timeS, timeE;
+int foeRow = 4, foeCol = 4;
+int foetimeS, foetimeE;
+int goodieRow = 2+random(-1,3), goodieCol = 2+random(-1,3);
+int goodtimeS, goodtimeE;
+
+int score = 0;
+int highScore = 0;
+
+byte one1 = 0b10000111;
+byte one2 = 0b10001011;
+byte one3 = 0b10001101;
+byte one4 = 0b10001110;
+byte two1 = 0b01000111;
+byte two2 = 0b01001011;
+byte two3 = 0b01001101;
+byte two4 = 0b01001110;
+byte three1 = 0b00100111;
+byte three2 = 0b00101011;
+byte three3 = 0b00101101;
+byte three4 = 0b00101110;
+byte four1 = 0b00010111;
+byte four2 = 0b00011011;
+byte four3 = 0b00011101;
+byte four4 = 0b00011110;
+
+//I messed up lightOn is (col,row) IRL
+void lightOn(int&row, int&col){
+  if(row > 4)
+    row = 4;
+  if(row < 1)
+    row = 1;
+  if(col > 4)
+    col = 4;
+  if(col < 1)
+    col = 1;
+  
+  if(row == 1 && col == 1){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, one1);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 1 && col == 2){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, one2);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 1 && col == 3){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, one3);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 1 && col == 4){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, one4);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 2 && col == 1){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, two1);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 2 && col == 2){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, two2);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 2 && col == 3){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, two3);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 2 && col == 4){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, two4);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 3 && col == 1){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, three1);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 3 && col == 2){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, three2);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 3 && col == 3){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, three3);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 3 && col == 4){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, three4);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 4 && col == 1){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, four1);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 4 && col == 2){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, four2);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 4 && col == 3){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, four3);
+    digitalWrite(pinLCH, 1);
+  }
+  if(row == 4 && col == 4){
+    digitalWrite(pinLCH, 0);
+    shiftOut(pinSER, pinCLK, LSBFIRST, four4);
+    digitalWrite(pinLCH, 1);
+  }
+}
+
+void foe(){
+  foetimeE = millis();
+  if(foetimeE - foetimeS > 500){
+    if(random(0, 2)==1)
+      foeCol += random(-1, 2);
+    else 
+      foeRow += random(-1, 2);
+    lightOn(foeCol, foeRow);
+    foetimeS = millis();
+  }
+}
+
+bool isHit(){
+  if(foeRow == myRow && foeCol == myCol)
+    return true;
+  else if(goodieRow == myRow && goodieCol == myCol)
+    return true;
+  else
+    return false;
+}
+
+void move(){
+  while(analogRead(pinX) < 200 && analogRead(pinY)< 800 && analogRead(pinY)> 200 && !isHit()){
+      lightOn(foeCol, foeRow);
+      lightOn(goodieCol, goodieRow);
+      lightOn(myCol, myRow);
+      foe();
+      timeE = millis();
+      if(timeE - timeS > 500){
+        myRow--;
+        lightOn(myCol, myRow);
+        timeS = millis();
+      }
+  }
+
+  while(analogRead(pinX) > 800 && analogRead(pinY)< 800 && analogRead(pinY)> 200 && !isHit()){
+      lightOn(foeCol, foeRow);
+      lightOn(goodieCol, goodieRow);
+      lightOn(myCol, myRow);
+      foe();
+      timeE = millis();
+      if(timeE - timeS > 500){
+        myRow++;
+        lightOn(myCol, myRow);
+        timeS = millis();
+      }
+  }
+  while(analogRead(pinY) < 200 && analogRead(pinX)< 800 && analogRead(pinX)> 200 && !isHit()){
+      lightOn(foeCol, foeRow);
+      lightOn(goodieCol, goodieRow);
+      lightOn(myCol, myRow);
+      foe();
+      timeE = millis();
+      if(timeE - timeS > 500){
+        myCol++;
+        lightOn(myCol, myRow);
+        timeS = millis();
+      }
+  }
+  while(analogRead(pinY) > 800 && analogRead(pinX)< 800 && analogRead(pinX)> 200 && !isHit()){
+      lightOn(foeCol, foeRow);
+      lightOn(goodieCol, goodieRow);
+      lightOn(myCol, myRow);
+      foe();
+      timeE = millis();
+      if(timeE - timeS > 500){
+        myCol--;
+        lightOn(myCol, myRow);
+        timeS = millis();
+      }
+    }
+}
+
+void setup() {
+  pinMode(pinSER,OUTPUT);
+  pinMode(pinCLK,OUTPUT); // put your setup code here, to run once:
+  pinMode(pinLCH, OUTPUT);
+  pinMode(joyStick,INPUT);
+  pinMode(3,OUTPUT);
+  randomSeed(analogRead(0));
+  foetimeS = millis();
+  timeS = millis();
+  Serial.begin(9600);
+}
+
+void loop() {
+  lightOn(myCol, myRow);
+  lightOn(foeCol, foeRow);
+  lightOn(goodieCol, goodieRow);
+  move();
+  foe();
+  if(goodieRow == myRow && goodieCol == myCol){
+    score++;
+    tone(buzzer, 600, 100);
+    goodieRow = random(1,5);
+    goodieCol = random(1,5);
+  }
+  if(foeRow == myRow && foeCol == myCol){
+    tone(buzzer, 800, 300);
+    delay(500);
+    tone(buzzer, 500, 300);
+    delay(500);
+    tone(buzzer, 400, 600);
+    shiftOut(pinSER, pinCLK, LSBFIRST, 0b00001111);
+    Serial.println(score);
+    digitalWrite(LED,HIGH);
+    delay(5000);
+    digitalWrite(LED,LOW);
+    myCol=1;
+    myRow=1;
+    foeCol=4;
+    foeRow=4;
+  }
+}
